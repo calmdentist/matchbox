@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import {Test, console2} from "forge-std/Test.sol";
+import {Test} from "forge-std/Test.sol";
 import {MatchboxRouter} from "../src/MatchboxRouter.sol";
 import {MockERC20} from "./mocks/MockERC20.sol";
 import {MockPolymarketCTF} from "./mocks/MockPolymarketCTF.sol";
@@ -102,26 +102,27 @@ contract MatchboxRouterTest is Test {
         IPolymarketExchange.Order[] memory orders = new IPolymarketExchange.Order[](0);
         bytes memory orderData = abi.encode(orders);
 
-        vm.prank(matchbox);
-
         // Test maxPrice > 10000
+        vm.prank(matchbox);
         vm.expectRevert(MatchboxRouter.InvalidParameters.selector);
         router.swapWithConstraints(CONDITION_A, 1, 100e6, 4000, 15000, orderData);
 
         // Test minPrice > maxPrice
+        vm.prank(matchbox);
         vm.expectRevert(MatchboxRouter.InvalidParameters.selector);
         router.swapWithConstraints(CONDITION_A, 1, 100e6, 7000, 5000, orderData);
 
         // Test amountIn = 0
+        vm.prank(matchbox);
         vm.expectRevert(MatchboxRouter.InvalidParameters.selector);
         router.swapWithConstraints(CONDITION_A, 1, 0, 4000, 6000, orderData);
     }
 
     function testImmutableVariables() public {
-        assertEq(address(router.ctf()), address(ctf), "CTF should match");
-        assertEq(address(router.exchange()), address(exchange), "Exchange should match");
-        assertEq(router.collateralToken(), address(usdc), "Collateral token should match");
-        assertEq(router.factory(), factory, "Factory should match");
+        assertEq(address(router.CTF()), address(ctf), "CTF should match");
+        assertEq(address(router.EXCHANGE()), address(exchange), "Exchange should match");
+        assertEq(router.COLLATERAL_TOKEN(), address(usdc), "Collateral token should match");
+        assertEq(router.FACTORY(), factory, "Factory should match");
     }
 }
 

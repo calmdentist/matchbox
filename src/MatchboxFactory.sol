@@ -35,16 +35,16 @@ contract MatchboxFactory {
     //////////////////////////////////////////////////////////////*/
 
     /// @notice The implementation contract for minimal proxies
-    address public immutable implementation;
+    address public immutable IMPLEMENTATION;
 
     /// @notice The MatchboxRouter address
-    address public immutable router;
+    address public immutable ROUTER;
 
     /// @notice The Polymarket CTF address
-    address public immutable ctf;
+    address public immutable CTF;
 
     /// @notice The collateral token (USDC)
-    address public immutable collateralToken;
+    address public immutable COLLATERAL_TOKEN;
 
     /// @notice Mapping from owner to their Matchbox addresses
     mapping(address => address[]) public ownerToMatchboxes;
@@ -70,12 +70,12 @@ contract MatchboxFactory {
             revert InvalidParameters();
         }
 
-        router = _router;
-        ctf = _ctf;
-        collateralToken = _collateralToken;
+        ROUTER = _router;
+        CTF = _ctf;
+        COLLATERAL_TOKEN = _collateralToken;
 
         // Deploy the implementation contract
-        implementation = address(new Matchbox(address(0), _router, _ctf, _collateralToken));
+        IMPLEMENTATION = address(new Matchbox(address(0), _router, _ctf, _collateralToken));
     }
 
     /*//////////////////////////////////////////////////////////////
@@ -101,7 +101,7 @@ contract MatchboxFactory {
         isMatchbox[matchbox] = true;
 
         // Authorize the Matchbox with the Router
-        (bool success,) = router.call(abi.encodeWithSignature("authorizeMatchbox(address)", matchbox));
+        (bool success,) = ROUTER.call(abi.encodeWithSignature("authorizeMatchbox(address)", matchbox));
         if (!success) revert DeploymentFailed();
 
         emit MatchboxCreated(msg.sender, matchbox, block.timestamp);
@@ -153,7 +153,7 @@ contract MatchboxFactory {
     function _getProxyBytecode() internal view returns (bytes memory bytecode) {
         // EIP-1167 minimal proxy bytecode
         // This is the standard minimal proxy pattern
-        bytes20 implementationBytes = bytes20(implementation);
+        bytes20 implementationBytes = bytes20(IMPLEMENTATION);
 
         bytecode = abi.encodePacked(
             hex"3d602d80600a3d3981f3363d3d373d3d3d363d73",
@@ -215,7 +215,7 @@ contract MatchboxFactory {
      * @return The implementation contract address
      */
     function getImplementation() external view returns (address) {
-        return implementation;
+        return IMPLEMENTATION;
     }
 }
 

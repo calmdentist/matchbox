@@ -50,16 +50,16 @@ contract MatchboxRouter {
     //////////////////////////////////////////////////////////////*/
 
     /// @notice The Polymarket CTF contract
-    IPolymarketCTF public immutable ctf;
+    IPolymarketCTF public immutable CTF;
 
     /// @notice The Polymarket Exchange contract
-    IPolymarketExchange public immutable exchange;
+    IPolymarketExchange public immutable EXCHANGE;
 
     /// @notice The collateral token (USDC)
-    address public immutable collateralToken;
+    address public immutable COLLATERAL_TOKEN;
 
     /// @notice The MatchboxFactory address (for validation)
-    address public immutable factory;
+    address public immutable FACTORY;
 
     /// @notice Mapping to track authorized Matchbox contracts
     mapping(address => bool) public isAuthorizedMatchbox;
@@ -76,10 +76,10 @@ contract MatchboxRouter {
      * @param _factory The MatchboxFactory address
      */
     constructor(address _ctf, address _exchange, address _collateralToken, address _factory) {
-        ctf = IPolymarketCTF(_ctf);
-        exchange = IPolymarketExchange(_exchange);
-        collateralToken = _collateralToken;
-        factory = _factory;
+        CTF = IPolymarketCTF(_ctf);
+        EXCHANGE = IPolymarketExchange(_exchange);
+        COLLATERAL_TOKEN = _collateralToken;
+        FACTORY = _factory;
     }
 
     /*//////////////////////////////////////////////////////////////
@@ -117,17 +117,17 @@ contract MatchboxRouter {
         uint256 minAmountOut = (amountIn * 10000) / maxPrice;
 
         // Transfer collateral from Matchbox to this contract
-        IERC20(collateralToken).safeTransferFrom(msg.sender, address(this), amountIn);
+        IERC20(COLLATERAL_TOKEN).safeTransferFrom(msg.sender, address(this), amountIn);
 
         // Get the position ID for this outcome
-        bytes32 collectionId = ctf.getCollectionId(bytes32(0), conditionId, 1 << outcomeIndex);
-        uint256 positionId = ctf.getPositionId(collateralToken, collectionId);
+        bytes32 collectionId = CTF.getCollectionId(bytes32(0), conditionId, 1 << outcomeIndex);
+        uint256 positionId = CTF.getPositionId(COLLATERAL_TOKEN, collectionId);
 
         // Approve exchange to spend collateral
-        IERC20(collateralToken).forceApprove(address(exchange), amountIn);
+        IERC20(COLLATERAL_TOKEN).forceApprove(address(EXCHANGE), amountIn);
 
         // Execute the trade via Polymarket Exchange
-        uint256 balanceBefore = ctf.balanceOf(address(this), positionId);
+        uint256 balanceBefore = CTF.balanceOf(address(this), positionId);
 
         // Decode and execute order
         IPolymarketExchange.Order[] memory orders = abi.decode(orderData, (IPolymarketExchange.Order[]));
@@ -139,9 +139,9 @@ contract MatchboxRouter {
             fillAmounts[i] = orders[i].takerAmount;
         }
 
-        exchange.fillOrders(orders, fillAmounts);
+        EXCHANGE.fillOrders(orders, fillAmounts);
 
-        uint256 balanceAfter = ctf.balanceOf(address(this), positionId);
+        uint256 balanceAfter = CTF.balanceOf(address(this), positionId);
         amountOut = balanceAfter - balanceBefore;
 
         // Enforce price constraint
@@ -156,7 +156,7 @@ contract MatchboxRouter {
         }
 
         // Transfer outcome tokens back to Matchbox
-        ctf.safeTransferFrom(address(this), msg.sender, positionId, amountOut, "");
+        CTF.safeTransferFrom(address(this), msg.sender, positionId, amountOut, "");
 
         emit TradeExecuted(msg.sender, conditionId, outcomeIndex, amountIn, amountOut, actualPrice);
 
@@ -182,16 +182,16 @@ contract MatchboxRouter {
         if (!isAuthorizedMatchbox[msg.sender]) revert UnauthorizedCaller();
 
         // Transfer collateral from Matchbox
-        IERC20(collateralToken).safeTransferFrom(msg.sender, address(this), amountIn);
+        IERC20(COLLATERAL_TOKEN).safeTransferFrom(msg.sender, address(this), amountIn);
 
         // Get position ID
-        bytes32 collectionId = ctf.getCollectionId(bytes32(0), conditionId, 1 << outcomeIndex);
-        uint256 positionId = ctf.getPositionId(collateralToken, collectionId);
+        bytes32 collectionId = CTF.getCollectionId(bytes32(0), conditionId, 1 << outcomeIndex);
+        uint256 positionId = CTF.getPositionId(COLLATERAL_TOKEN, collectionId);
 
         // Approve and execute trade
-        IERC20(collateralToken).forceApprove(address(exchange), amountIn);
+        IERC20(COLLATERAL_TOKEN).forceApprove(address(EXCHANGE), amountIn);
 
-        uint256 balanceBefore = ctf.balanceOf(address(this), positionId);
+        uint256 balanceBefore = CTF.balanceOf(address(this), positionId);
 
         // Execute orders
         IPolymarketExchange.Order[] memory orders = abi.decode(orderData, (IPolymarketExchange.Order[]));
@@ -201,15 +201,15 @@ contract MatchboxRouter {
             fillAmounts[i] = orders[i].takerAmount;
         }
 
-        exchange.fillOrders(orders, fillAmounts);
+        EXCHANGE.fillOrders(orders, fillAmounts);
 
-        uint256 balanceAfter = ctf.balanceOf(address(this), positionId);
+        uint256 balanceAfter = CTF.balanceOf(address(this), positionId);
         amountOut = balanceAfter - balanceBefore;
 
         if (amountOut < minAmountOut) revert SlippageExceeded();
 
         // Transfer tokens back to Matchbox
-        ctf.safeTransferFrom(address(this), msg.sender, positionId, amountOut, "");
+        CTF.safeTransferFrom(address(this), msg.sender, positionId, amountOut, "");
 
         uint256 price = (amountIn * 10000) / amountOut;
         emit TradeExecuted(msg.sender, conditionId, outcomeIndex, amountIn, amountOut, price);
@@ -222,7 +222,7 @@ contract MatchboxRouter {
      * @param matchbox The Matchbox address to authorize
      */
     function authorizeMatchbox(address matchbox) external {
-        if (msg.sender != factory) revert UnauthorizedCaller();
+        if (msg.sender != FACTORY) revert UnauthorizedCaller();
         isAuthorizedMatchbox[matchbox] = true;
     }
 

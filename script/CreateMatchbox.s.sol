@@ -30,7 +30,7 @@ contract CreateMatchbox is Script {
 
         console2.log("\n=== Matchbox Created ===");
         console2.log("Matchbox address:", matchbox);
-        console2.log("Owner:", Matchbox(matchbox).owner());
+        console2.log("Owner:", Matchbox(matchbox).OWNER());
 
         // Get user's total matchboxes
         address[] memory userMatchboxes = factory.getMatchboxesForOwner(user);

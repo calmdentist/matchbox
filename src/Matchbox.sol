@@ -46,16 +46,16 @@ contract Matchbox {
     //////////////////////////////////////////////////////////////*/
 
     /// @notice The owner of this Matchbox (the user who deployed it)
-    address public immutable owner;
+    address public immutable OWNER;
 
     /// @notice The MatchboxRouter contract that executes trades
-    address public immutable router;
+    address public immutable ROUTER;
 
     /// @notice The Polymarket CTF contract
-    IPolymarketCTF public immutable ctf;
+    IPolymarketCTF public immutable CTF;
 
     /// @notice The collateral token (USDC)
-    address public immutable collateralToken;
+    address public immutable COLLATERAL_TOKEN;
 
     /// @notice Current step in the sequence (0-indexed)
     uint256 public currentStep;
@@ -103,10 +103,10 @@ contract Matchbox {
      * @param _collateralToken The collateral token address (USDC)
      */
     constructor(address _owner, address _router, address _ctf, address _collateralToken) {
-        owner = _owner;
-        router = _router;
-        ctf = IPolymarketCTF(_ctf);
-        collateralToken = _collateralToken;
+        OWNER = _owner;
+        ROUTER = _router;
+        CTF = IPolymarketCTF(_ctf);
+        COLLATERAL_TOKEN = _collateralToken;
     }
 
     /*//////////////////////////////////////////////////////////////
@@ -118,7 +118,7 @@ contract Matchbox {
      * @param rules Array of rules defining the conditional sequence
      */
     function initializeSequence(Rule[] calldata rules) external {
-        if (msg.sender != owner) revert Unauthorized();
+        if (msg.sender != OWNER) revert Unauthorized();
         if (isActive) revert InvalidStep();
         if (rules.length == 0) revert InvalidRule();
 
@@ -142,20 +142,18 @@ contract Matchbox {
      * @param orderData Encoded order data for the MatchboxRouter
      */
     function executeFirstStep(uint256 amountIn, bytes calldata orderData) external {
-        if (msg.sender != owner) revert Unauthorized();
+        if (msg.sender != OWNER) revert Unauthorized();
         if (!isActive) revert InvalidStep();
         if (currentStep != 0) revert InvalidStep();
 
-        Rule memory rule = sequence[0];
-
         // Transfer collateral from owner to this contract
-        IERC20(collateralToken).safeTransferFrom(owner, address(this), amountIn);
+        IERC20(COLLATERAL_TOKEN).safeTransferFrom(OWNER, address(this), amountIn);
 
         // Approve router to spend collateral
-        IERC20(collateralToken).forceApprove(router, amountIn);
+        IERC20(COLLATERAL_TOKEN).forceApprove(ROUTER, amountIn);
 
         // Execute trade via router
-        (bool success, bytes memory result) = router.call(orderData);
+        (bool success, bytes memory result) = ROUTER.call(orderData);
         if (!success) revert TransferFailed();
 
         uint256 amountOut = abi.decode(result, (uint256));
@@ -170,11 +168,11 @@ contract Matchbox {
      * @param amount The amount to withdraw (0 = withdraw all)
      */
     function withdrawFunds(address token, uint256 amount) external {
-        if (msg.sender != owner) revert Unauthorized();
+        if (msg.sender != OWNER) revert Unauthorized();
 
         uint256 balance;
-        if (token == collateralToken) {
-            balance = IERC20(collateralToken).balanceOf(address(this));
+        if (token == COLLATERAL_TOKEN) {
+            balance = IERC20(COLLATERAL_TOKEN).balanceOf(address(this));
         } else {
             // For conditional tokens (ERC1155), we need the token ID
             // This is a simplified version - in production, track token IDs
@@ -184,7 +182,7 @@ contract Matchbox {
         uint256 withdrawAmount = amount == 0 ? balance : amount;
         if (withdrawAmount > balance) revert TransferFailed();
 
-        IERC20(token).safeTransfer(owner, withdrawAmount);
+        IERC20(token).safeTransfer(OWNER, withdrawAmount);
 
         emit FundsWithdrawn(token, withdrawAmount);
     }
@@ -193,7 +191,7 @@ contract Matchbox {
      * @notice Emergency function to deactivate the sequence
      */
     function deactivate() external {
-        if (msg.sender != owner) revert Unauthorized();
+        if (msg.sender != OWNER) revert Unauthorized();
         isActive = false;
     }
 
@@ -218,7 +216,7 @@ contract Matchbox {
         }
 
         // Get available collateral balance
-        uint256 availableBalance = IERC20(collateralToken).balanceOf(address(this));
+        uint256 availableBalance = IERC20(COLLATERAL_TOKEN).balanceOf(address(this));
         if (availableBalance == 0) revert TransferFailed();
 
         // Determine amount to use for this step
@@ -228,10 +226,10 @@ contract Matchbox {
         }
 
         // Approve router to spend collateral
-        IERC20(collateralToken).forceApprove(router, amountIn);
+        IERC20(COLLATERAL_TOKEN).forceApprove(ROUTER, amountIn);
 
         // Execute trade via router with constraints
-        (bool success, bytes memory result) = router.call(orderData);
+        (bool success, bytes memory result) = ROUTER.call(orderData);
 
         if (!success) {
             // If trade fails (e.g., price constraint not met), skip this step
@@ -270,7 +268,7 @@ contract Matchbox {
         if (currentStep > 0) {
             Rule memory prevRule = sequence[currentStep - 1];
             // Check if condition is resolved by checking if payout denominator is set
-            uint256 denominator = ctf.payoutDenominator(prevRule.conditionId);
+            uint256 denominator = CTF.payoutDenominator(prevRule.conditionId);
             if (denominator == 0) {
                 // Market not resolved yet
                 return (false, "");
@@ -293,19 +291,19 @@ contract Matchbox {
         Rule memory rule = sequence[stepIndex];
 
         // Get the position ID for the conditional token
-        bytes32 collectionId = ctf.getCollectionId(bytes32(0), rule.conditionId, 1 << rule.outcomeIndex);
+        bytes32 collectionId = CTF.getCollectionId(bytes32(0), rule.conditionId, 1 << rule.outcomeIndex);
 
-        uint256 positionId = ctf.getPositionId(collateralToken, collectionId);
+        uint256 positionId = CTF.getPositionId(COLLATERAL_TOKEN, collectionId);
 
         // Check balance of conditional tokens
-        uint256 balance = ctf.balanceOf(address(this), positionId);
+        uint256 balance = CTF.balanceOf(address(this), positionId);
 
         if (balance > 0) {
             // Redeem the tokens for collateral
             uint256[] memory indexSets = new uint256[](1);
             indexSets[0] = 1 << rule.outcomeIndex;
 
-            ctf.redeemPositions(collateralToken, bytes32(0), rule.conditionId, indexSets);
+            CTF.redeemPositions(COLLATERAL_TOKEN, bytes32(0), rule.conditionId, indexSets);
         }
     }
 

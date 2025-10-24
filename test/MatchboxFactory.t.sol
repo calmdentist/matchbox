@@ -1,10 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import {Test, console2} from "forge-std/Test.sol";
+import {Test} from "forge-std/Test.sol";
 import {MatchboxFactory} from "../src/MatchboxFactory.sol";
 import {MatchboxRouter} from "../src/MatchboxRouter.sol";
-import {Matchbox} from "../src/Matchbox.sol";
 import {MockERC20} from "./mocks/MockERC20.sol";
 import {MockPolymarketCTF} from "./mocks/MockPolymarketCTF.sol";
 import {MockPolymarketExchange} from "./mocks/MockPolymarketExchange.sol";
@@ -29,19 +28,23 @@ contract MatchboxFactoryTest is Test {
         ctf = new MockPolymarketCTF();
         exchange = new MockPolymarketExchange();
 
-        // Deploy router first (needed for factory)
+        // Calculate factory address before deployment (for router constructor)
+        // Factory will be deployed at the next nonce
+        address predictedFactory = vm.computeCreateAddress(address(this), vm.getNonce(address(this)) + 1);
+
+        // Deploy router with predicted factory address
         router = new MatchboxRouter(
             address(ctf),
             address(exchange),
             address(usdc),
-            address(0) // Factory address will be set after deployment
+            predictedFactory
         );
 
-        // Deploy factory
+        // Deploy factory (must be next deployment after router)
         factory = new MatchboxFactory(address(router), address(ctf), address(usdc));
 
-        // Update router's factory address manually for this test
-        // In production, router would be deployed with correct factory address
+        // Verify factory address matches prediction
+        assertEq(address(factory), predictedFactory, "Factory address mismatch");
     }
 
     function testCreateMatchbox() public {

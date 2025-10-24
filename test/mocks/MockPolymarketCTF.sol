@@ -39,7 +39,7 @@ contract MockPolymarketCTF {
         // In reality, this would burn conditional tokens and return collateral
     }
 
-    function getOutcomeSlotCount(bytes32 conditionId) external pure returns (uint256) {
+    function getOutcomeSlotCount(bytes32 /* conditionId */) external pure returns (uint256) {
         return 2; // Binary markets
     }
 

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import {Test, console2} from "forge-std/Test.sol";
+import {Test} from "forge-std/Test.sol";
 import {Matchbox} from "../src/Matchbox.sol";
 import {MatchboxRouter} from "../src/MatchboxRouter.sol";
 import {MockERC20} from "./mocks/MockERC20.sol";
@@ -207,9 +207,10 @@ contract MatchboxTest is Test {
         matchbox.initializeSequence(rules);
 
         // Check upkeep before market resolution (should be false for step 1)
-        (bool upkeepNeeded,) = matchbox.checkUpkeep("");
+        (, bytes memory performData) = matchbox.checkUpkeep("");
         // First step doesn't need previous market resolution
         // The actual implementation may vary
+        assertEq(performData.length, 0, "performData should be empty initially");
     }
 }
 
