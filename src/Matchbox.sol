@@ -255,7 +255,9 @@ contract Matchbox {
      * @return upkeepNeeded Whether the next step can be executed
      * @return performData Encoded data for executeNextStep
      */
-    function checkUpkeep(bytes calldata /* checkData */ )
+    function checkUpkeep(
+        bytes calldata /* checkData */
+    )
         external
         view
         returns (bool upkeepNeeded, bytes memory performData)
@@ -306,7 +308,6 @@ contract Matchbox {
             CTF.redeemPositions(COLLATERAL_TOKEN, bytes32(0), rule.conditionId, indexSets);
         }
     }
-
 
     /*//////////////////////////////////////////////////////////////
                             VIEW FUNCTIONS

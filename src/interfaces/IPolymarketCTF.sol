@@ -50,11 +50,10 @@ interface IPolymarketCTF {
      * @param indexSet The index set representing the position
      * @return The collection ID
      */
-    function getCollectionId(
-        bytes32 parentCollectionId,
-        bytes32 conditionId,
-        uint256 indexSet
-    ) external view returns (bytes32);
+    function getCollectionId(bytes32 parentCollectionId, bytes32 conditionId, uint256 indexSet)
+        external
+        view
+        returns (bytes32);
 
     /**
      * @notice Gets the position ID (ERC1155 token ID) for a position
@@ -80,12 +79,6 @@ interface IPolymarketCTF {
      * @param value The amount to transfer
      * @param data Additional data
      */
-    function safeTransferFrom(
-        address from,
-        address to,
-        uint256 id,
-        uint256 value,
-        bytes calldata data
-    ) external;
+    function safeTransferFrom(address from, address to, uint256 id, uint256 value, bytes calldata data) external;
 }
 

@@ -10,9 +10,7 @@ contract MockPolymarketCTF {
     mapping(bytes32 => uint256) public payoutDenominators;
     mapping(bytes32 => mapping(uint256 => uint256)) public payoutNumeratorsMap;
 
-    event TransferSingle(
-        address indexed operator, address indexed from, address indexed to, uint256 id, uint256 value
-    );
+    event TransferSingle(address indexed operator, address indexed from, address indexed to, uint256 id, uint256 value);
 
     function balanceOf(address account, uint256 id) external view returns (uint256) {
         return balances[account][id];
@@ -39,7 +37,13 @@ contract MockPolymarketCTF {
         // In reality, this would burn conditional tokens and return collateral
     }
 
-    function getOutcomeSlotCount(bytes32 /* conditionId */) external pure returns (uint256) {
+    function getOutcomeSlotCount(
+        bytes32 /* conditionId */
+    )
+        external
+        pure
+        returns (uint256)
+    {
         return 2; // Binary markets
     }
 

@@ -33,12 +33,7 @@ contract MatchboxFactoryTest is Test {
         address predictedFactory = vm.computeCreateAddress(address(this), vm.getNonce(address(this)) + 1);
 
         // Deploy router with predicted factory address
-        router = new MatchboxRouter(
-            address(ctf),
-            address(exchange),
-            address(usdc),
-            predictedFactory
-        );
+        router = new MatchboxRouter(address(ctf), address(exchange), address(usdc), predictedFactory);
 
         // Deploy factory (must be next deployment after router)
         factory = new MatchboxFactory(address(router), address(ctf), address(usdc));

@@ -156,9 +156,7 @@ contract MatchboxFactory {
         bytes20 implementationBytes = bytes20(IMPLEMENTATION);
 
         bytecode = abi.encodePacked(
-            hex"3d602d80600a3d3981f3363d3d373d3d3d363d73",
-            implementationBytes,
-            hex"5af43d82803e903d91602b57fd5bf3"
+            hex"3d602d80600a3d3981f3363d3d373d3d3d363d73", implementationBytes, hex"5af43d82803e903d91602b57fd5bf3"
         );
     }
 
@@ -189,11 +187,7 @@ contract MatchboxFactory {
      * @param limit The number of items to return
      * @return matchboxes Array of Matchbox addresses
      */
-    function getAllMatchboxes(uint256 offset, uint256 limit)
-        external
-        view
-        returns (address[] memory matchboxes)
-    {
+    function getAllMatchboxes(uint256 offset, uint256 limit) external view returns (address[] memory matchboxes) {
         uint256 total = allMatchboxes.length;
         if (offset >= total) return new address[](0);
 

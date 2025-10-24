@@ -19,7 +19,13 @@ contract MockPolymarketExchange {
         // Mock implementation - in reality would match multiple orders
     }
 
-    function getOrderStatus(bytes32 /* orderHash */) external pure returns (uint256) {
+    function getOrderStatus(
+        bytes32 /* orderHash */
+    )
+        external
+        pure
+        returns (uint256)
+    {
         return 0;
     }
 
