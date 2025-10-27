@@ -38,6 +38,19 @@ For detailed architecture documentation, see [architecture.md](./architecture.md
 - **`Matchbox.sol`**: User-owned vault that holds funds, stores rules, and executes conditional trades
 - **`MatchboxRouter.sol`**: Stateless adapter that interacts with Polymarket's AMM and enforces price constraints
 
+### EIP-1167 Minimal Proxy Pattern
+
+Matchbox uses the minimal proxy pattern for gas-efficient deployments:
+
+- **Implementation Contract**: A single master Matchbox contract deployed once by the Factory
+- **Proxy Contracts**: Lightweight (~45 bytes) contracts that delegate all calls to the Implementation
+- **Gas Savings**: ~90% reduction in deployment costs compared to deploying full contract code
+
+When a user creates a Matchbox, they receive a proxy that:
+- Delegates all logic to the shared Implementation
+- Maintains their own isolated storage
+- Acts as their personal non-custodial vault
+
 ## Getting Started
 
 ### Prerequisites
@@ -104,28 +117,57 @@ forge snapshot
 
 ## Deployment
 
-Deploy contracts to a network:
+### Local Development (Polygon Fork)
+
+The easiest way to get started is with the provided deployment script that forks Polygon mainnet:
 
 ```shell
-forge script script/Deploy.s.sol:DeployScript \
+./deploy.sh
+```
+
+This script will:
+1. Start an Anvil node forking Polygon mainnet (with all Polymarket contracts)
+2. Deploy MatchboxRouter and MatchboxFactory
+3. Display deployed contract addresses
+4. Keep the node running for testing
+
+**Configuration Options:**
+
+```shell
+# Use a custom Polygon RPC (recommended for faster sync)
+POLYGON_RPC_URL="https://polygon-mainnet.g.alchemy.com/v2/YOUR_KEY" ./deploy.sh
+
+# Use a custom port
+ANVIL_PORT=9545 ./deploy.sh
+
+# Use a custom private key
+PRIVATE_KEY="0x..." ./deploy.sh
+```
+
+**Default Configuration:**
+- RPC URL: `http://localhost:8545`
+- Chain ID: `137` (Polygon Mainnet)
+- Test Account: `0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266`
+- Test Private Key: `0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80`
+
+The node will continue running until you press `Ctrl+C`.
+
+### Manual Deployment
+
+Deploy contracts to a network manually:
+
+```shell
+forge script script/DeployMatchbox.s.sol \
   --rpc-url <your_rpc_url> \
   --private-key <your_private_key> \
   --broadcast \
   --verify
 ```
 
-## Local Development
-
-Start a local Ethereum node:
+Deploy to an already-running local node:
 
 ```shell
-anvil
-```
-
-Deploy to local node:
-
-```shell
-forge script script/Deploy.s.sol:DeployScript \
+forge script script/DeployMatchbox.s.sol \
   --rpc-url http://localhost:8545 \
   --private-key <anvil_private_key> \
   --broadcast

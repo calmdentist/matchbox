@@ -12,3 +12,8 @@ docs/
 
 # Dotenv file
 .env
+
+# anvil logs
+anvil.log
+.anvil.pid
+broadcast/
