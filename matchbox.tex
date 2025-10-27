@@ -70,8 +70,8 @@ The protocol consists of three distinct layers:
 
     \item \textbf{The Execution Layer (Automation):}
     \begin{itemize}
-        \item \texttt{MatchboxRouter.sol:} A single, stateless, and heavily audited utility contract. It is the only contract that talks to the underlying DPMs (e.g., Polymarket's AMM) to perform swaps.
-        \item \textbf{Decentralized Trigger:} An automation network (e.g., Chainlink Automation) that monitors for the resolution of an event and triggers the \texttt{Matchbox.sol} contract to execute its next step.
+        \item \texttt{MatchboxRouter.sol:} A single, stateless, and heavily audited utility contract. It is the only contract that talks to the underlying DPMs (e.g., Polymarket's AMM) to perform swaps. It also enforces the user's price constraints/rules.
+        \item \textbf{Automation:} Users choose between a decentralized automation network (e.g., Chainlink Automation, slower but more reliable) or Matchbox's in-house automation service (faster but less reliable) that monitors conditions being met and triggers the \texttt{Matchbox.sol} contract to execute its next step.
     \end{itemize}
 \end{itemize}
 
