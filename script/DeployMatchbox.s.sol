@@ -31,14 +31,20 @@ contract DeployMatchbox is Script {
 
         // Determine which network we're on
         bool isPolygon = block.chainid == 137;
-        bool isTestnet = block.chainid == 80001 || block.chainid == 31337; // Mumbai or local
+        bool isLocalFork = block.chainid == 31337; // Local Anvil fork
+        bool isTestnet = block.chainid == 80001; // Mumbai
 
         address usdc;
         address ctf;
         address exchangeAddr;
 
-        if (isPolygon) {
-            console2.log("Deploying to Polygon mainnet");
+        if (isPolygon || isLocalFork) {
+            // Use Polygon addresses for mainnet or local fork
+            if (isLocalFork) {
+                console2.log("Deploying to local Anvil fork (using Polygon addresses)");
+            } else {
+                console2.log("Deploying to Polygon mainnet");
+            }
             usdc = POLYGON_USDC;
             ctf = POLYGON_CTF;
             exchangeAddr = POLYGON_EXCHANGE;

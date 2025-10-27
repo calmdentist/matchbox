@@ -66,14 +66,14 @@ stop_existing_anvil
 echo -e "${GREEN}Step 1: Starting Anvil node (forking Polygon)...${NC}"
 echo -e "  - Fork URL: $POLYGON_RPC_URL"
 echo -e "  - Port: $ANVIL_PORT"
-echo -e "  - Chain ID: 137 (Polygon Mainnet)"
+echo -e "  - Chain ID: 31337 (Anvil Local)"
 echo ""
 
 # Start Anvil in the background and save PID
 anvil \
     --fork-url "$POLYGON_RPC_URL" \
     --port "$ANVIL_PORT" \
-    --chain-id 137 \
+    --chain-id 31337 \
     --accounts 10 \
     --balance 10000 \
     > anvil.log 2>&1 &
@@ -153,7 +153,7 @@ echo -e "${GREEN}========================================${NC}\n"
 
 echo -e "${GREEN}Local Node Information:${NC}"
 echo -e "  - RPC URL: http://localhost:$ANVIL_PORT"
-echo -e "  - Chain ID: 137 (Polygon Mainnet)"
+echo -e "  - Chain ID: 31337 (Anvil Local)"
 echo -e "  - Forked from: Polygon Mainnet"
 echo ""
 
